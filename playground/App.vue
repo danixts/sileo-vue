@@ -153,21 +153,22 @@ watch(
 
   <main class="workbench">
     <header class="masthead">
-      <div>
+      <div class="masthead-copy">
         <p class="wordmark">Sileo / Vue 3</p>
-        <h1>Toast lab.</h1>
+        <h1>Toast lab<span aria-hidden="true">.</span></h1>
       </div>
-      <p class="intro">
-        Una mesa de pruebas real para revisar estados, posiciones, promesas y
-        acciones antes de instalar la librería en otro proyecto.
-      </p>
+      <div class="lab-status" aria-label="Estado del playground">
+        <span class="status-signal" aria-hidden="true"><i /></span>
+        <strong>Playground activo</strong>
+        <code>v0.1.0</code>
+      </div>
     </header>
 
     <section class="lab" aria-label="Controles del playground">
       <aside class="control-panel">
         <div class="panel-heading">
           <h2>Configuración</h2>
-          <span>Live</span>
+          <span><i aria-hidden="true" />Live</span>
         </div>
 
         <label class="field">
@@ -255,37 +256,68 @@ watch(
 
         <div class="trigger-grid">
           <button type="button" data-tone="success" @click="showSuccess">
-            <span>01</span>
-            Success
+            <span class="trigger-signal" aria-hidden="true"><i /></span>
+            <span class="trigger-copy">
+              <strong>Success</strong>
+              <small>Confirmación positiva</small>
+            </span>
+            <span class="trigger-mark" aria-hidden="true">↗</span>
           </button>
           <button type="button" data-tone="error" @click="showError">
-            <span>02</span>
-            Error
+            <span class="trigger-signal" aria-hidden="true"><i /></span>
+            <span class="trigger-copy">
+              <strong>Error</strong>
+              <small>Fallo recuperable</small>
+            </span>
+            <span class="trigger-mark" aria-hidden="true">↗</span>
           </button>
           <button type="button" data-tone="warning" @click="showWarning">
-            <span>03</span>
-            Warning
+            <span class="trigger-signal" aria-hidden="true"><i /></span>
+            <span class="trigger-copy">
+              <strong>Warning</strong>
+              <small>Atención necesaria</small>
+            </span>
+            <span class="trigger-mark" aria-hidden="true">↗</span>
           </button>
           <button type="button" data-tone="info" @click="showInfo">
-            <span>04</span>
-            Info
+            <span class="trigger-signal" aria-hidden="true"><i /></span>
+            <span class="trigger-copy">
+              <strong>Info</strong>
+              <small>Contexto adicional</small>
+            </span>
+            <span class="trigger-mark" aria-hidden="true">↗</span>
           </button>
           <button type="button" data-tone="action" @click="showAction">
-            <span>05</span>
-            Action
+            <span class="trigger-signal" aria-hidden="true"><i /></span>
+            <span class="trigger-copy">
+              <strong>Action</strong>
+              <small>Acción disponible</small>
+            </span>
+            <span class="trigger-mark" aria-hidden="true">↗</span>
           </button>
           <button
             type="button"
             data-tone="promise"
+            :aria-busy="promiseState === 'running'"
             :disabled="promiseState === 'running'"
             @click="showPromise"
           >
-            <span>06</span>
-            {{ promiseState === "running" ? "Running" : "Promise" }}
+            <span class="trigger-signal" aria-hidden="true"><i /></span>
+            <span class="trigger-copy">
+              <strong>{{
+                promiseState === "running" ? "Running" : "Promise"
+              }}</strong>
+              <small>Ciclo asíncrono</small>
+            </span>
+            <span class="trigger-mark" aria-hidden="true">↗</span>
           </button>
           <button type="button" data-tone="stack" @click="showStack">
-            <span>07</span>
-            Stack ×3
+            <span class="trigger-signal" aria-hidden="true"><i /></span>
+            <span class="trigger-copy">
+              <strong>Stack ×3</strong>
+              <small>Agrupar notificaciones</small>
+            </span>
+            <span class="trigger-mark" aria-hidden="true">↗</span>
           </button>
         </div>
       </div>

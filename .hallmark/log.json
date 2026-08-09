@@ -1,6 +1,13 @@
 [
   {
     "date": "2026-08-09",
+    "macrostructure": "Control Deck",
+    "theme": "Tactile Studio",
+    "enrichment": "state-driven trigger controls",
+    "brief": "Responsive playground redesign with distinctive state buttons"
+  },
+  {
+    "date": "2026-08-09",
     "macrostructure": "Interactive Workbench",
     "theme": "Studio",
     "enrichment": "real component demo",

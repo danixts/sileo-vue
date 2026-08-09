@@ -1,11 +1,11 @@
 {
     "schema_version": 2,
-    "commit": "9793f844349983e140cf33cebbb8f51626d41407",
-    "indexed_at": "2026-08-09T06:23:43Z",
+    "commit": "74e3fd9e05b9741c604aab0eff4ae42d7108a69b",
+    "indexed_at": "2026-08-09T06:58:20Z",
     "project": "sileo-vue",
-    "nodes": 184,
-    "edges": 307,
-    "original_size": 1769472,
-    "compressed_size": 37843,
+    "nodes": 200,
+    "edges": 321,
+    "original_size": 1900544,
+    "compressed_size": 94710,
     "compression_level": 3
 }

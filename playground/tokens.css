@@ -1,7 +1,9 @@
 :root {
   --color-paper: oklch(16% 0.015 260);
+  --color-paper-deep: oklch(12% 0.014 260);
   --color-paper-raised: oklch(21% 0.018 260);
   --color-paper-soft: oklch(25% 0.02 260);
+  --color-paper-bright: oklch(29% 0.024 260);
   --color-ink: oklch(94% 0.01 95);
   --color-ink-muted: oklch(70% 0.018 260);
   --color-accent: oklch(86% 0.2 126);
@@ -9,8 +11,16 @@
   --color-rule: oklch(35% 0.02 260);
   --color-focus: oklch(88% 0.16 126);
   --color-danger: oklch(68% 0.2 25);
-  --font-display: "Arial Narrow", "Roboto Condensed", sans-serif;
-  --font-body: Inter, Aptos, sans-serif;
+  --color-success: oklch(78% 0.18 145);
+  --color-error: oklch(68% 0.2 25);
+  --color-warning: oklch(82% 0.17 83);
+  --color-info: oklch(73% 0.15 235);
+  --color-action: oklch(76% 0.17 310);
+  --color-promise: oklch(75% 0.16 280);
+  --color-stack: oklch(82% 0.15 185);
+  --color-shadow: oklch(5% 0.01 260 / 55%);
+  --font-display: "Archivo Variable", sans-serif;
+  --font-body: "Manrope Variable", sans-serif;
   --font-mono: "SFMono-Regular", Consolas, monospace;
   --space-2xs: 0.25rem;
   --space-xs: 0.5rem;
@@ -25,6 +35,7 @@
   --radius-sm: 0.4rem;
   --radius-md: 0.75rem;
   --radius-lg: 1.25rem;
+  --radius-xl: 1.75rem;
   --rule-thin: 1px;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
