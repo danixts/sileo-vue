@@ -112,6 +112,7 @@ await sileo.promise(saveProfile(), {
 ```vue
 <Toaster
   position="bottom-right"
+  :z-index="1000"
   theme="system"
   :offset="{ bottom: 24, right: 24 }"
   :options="{
@@ -123,6 +124,20 @@ await sileo.promise(saveProfile(), {
 ```
 
 Las opciones enviadas a un toast tienen prioridad sobre las opciones globales.
+
+Para el caso común también se puede declarar el tiempo de vida directamente:
+
+```vue
+<Toaster :duration="5000" />
+```
+
+`zIndex` tiene como valor predeterminado `1000`, por encima de los modales
+más comunes. Se puede ajustar si la aplicación usa una escala de capas propia.
+
+`duration` se expresa en milisegundos; `null` deja el toast visible hasta que
+se descarte. Aunque `200` es válido para una señal efímera, no se recomienda
+para mensajes que el usuario deba leer: la animación física dura alrededor de
+600 ms. Para éxito, advertencia o error usa normalmente entre 3000 y 6000 ms.
 
 ## Temas
 

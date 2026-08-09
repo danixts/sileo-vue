@@ -65,6 +65,10 @@ export interface SileoPromiseOptions<T = unknown> {
 export interface SileoToasterProps {
   position?: SileoPosition;
   offset?: SileoOffsetValue | SileoOffsetConfig;
+  /** Stacking level for the toast viewport. Defaults above common dialogs/modals. */
+  zIndex?: number;
+  /** Default lifetime in milliseconds for every toast rendered by this viewport. */
+  duration?: number | null;
   options?: Partial<SileoOptions>;
   theme?: SileoTheme;
 }

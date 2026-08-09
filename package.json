@@ -1,6 +1,6 @@
 {
   "name": "@danixts/sileo-vue",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Physics-based toast notifications for Vue 3, inspired by Sileo.",
   "keywords": [
     "vue",

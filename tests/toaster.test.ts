@@ -17,6 +17,7 @@ describe("Toaster", () => {
     expect(viewport.attributes("data-position")).toBe("bottom-left");
     expect(viewport.attributes("data-theme")).toBe("dark");
     expect(viewport.attributes("style")).toContain("bottom: 24px");
+    expect(viewport.attributes("style")).toContain("z-index: 1000");
     expect(wrapper.get("[data-sileo-pill]").attributes("fill")).toBe(
       "var(--sileo-variant-surface, var(--sileo-surface, #ffffff))",
     );
@@ -132,6 +133,19 @@ describe("Toaster", () => {
 
     await wrapper.get("[data-sileo-button]").trigger("click");
     expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  it("uses the direct duration prop as the global toast lifetime", async () => {
+    vi.useFakeTimers();
+    const wrapper = mount(Toaster, { props: { duration: 200 } });
+    sileo.info({ title: "Short lived" });
+    await nextTick();
+
+    await vi.advanceTimersByTimeAsync(201);
+    await nextTick();
+    expect(wrapper.get("[data-sileo-toast]").attributes("data-exiting")).toBe(
+      "true",
+    );
   });
 
   it("pauses and restarts dismissal timers while hovered", async () => {

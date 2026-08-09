@@ -30,10 +30,12 @@ const props = withDefaults(
   defineProps<{
     position?: SileoPosition;
     offset?: SileoOffsetValue | SileoOffsetConfig;
+    zIndex?: number;
+    duration?: number | null;
     options?: Partial<SileoOptions>;
     theme?: SileoTheme;
   }>(),
-  { position: "top-right" },
+  { position: "top-right", zIndex: 1000 },
 );
 
 const toasts = shallowRef<SileoItem[]>(store.toasts);
@@ -53,6 +55,11 @@ const latestId = computed(() => {
     if (toast && !toast.exiting) return toast.id;
   }
   return undefined;
+});
+
+const globalOptions = computed<Partial<SileoOptions> | undefined>(() => {
+  if (props.duration === undefined) return props.options;
+  return { ...props.options, duration: props.duration };
 });
 
 const activePositions = computed(() => {
@@ -129,10 +136,9 @@ function expandDirection(position: SileoPosition): "top" | "bottom" {
   return position.startsWith("top") ? "bottom" : "top";
 }
 
-function viewportStyle(
-  position: SileoPosition,
-): SileoViewportStyle | undefined {
-  if (props.offset === undefined) return undefined;
+function viewportStyle(position: SileoPosition): SileoViewportStyle {
+  const style: SileoViewportStyle = { zIndex: props.zIndex };
+  if (props.offset === undefined) return style;
   const offset =
     typeof props.offset === "object"
       ? props.offset
@@ -142,7 +148,6 @@ function viewportStyle(
           bottom: props.offset,
           left: props.offset,
         };
-  const style: SileoViewportStyle = {};
   const toCssValue = (value: SileoOffsetValue) =>
     typeof value === "number" ? `${value}px` : value;
 
@@ -162,7 +167,7 @@ function viewportStyle(
 }
 
 watch(
-  [() => props.position, () => props.options],
+  [() => props.position, globalOptions],
   ([position, options]) => configureSileo(position, options),
   { immediate: true, deep: true },
 );
