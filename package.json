@@ -1,0 +1,81 @@
+{
+  "name": "@danixts/sileo-vue",
+  "version": "0.1.0",
+  "description": "Physics-based toast notifications for Vue 3, inspired by Sileo.",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@11.20.0",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danixts/sileo-vue.git"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/types/index.d.ts",
+  "scripts": {
+    "build": "pnpm clean && vue-tsc -p tsconfig.build.json && vite build",
+    "clean": "rm -rf dist coverage",
+    "dev": "vite build --watch",
+    "lint": "eslint src tests scripts playground eslint.config.js vite.config.ts vite.playground.config.ts vitest.config.ts",
+    "format": "prettier --write src tests scripts playground README.md THIRD_PARTY_NOTICES.md package.json tsconfig.json tsconfig.build.json vite.config.ts vite.playground.config.ts vitest.config.ts",
+    "format:check": "prettier --check src tests scripts playground README.md THIRD_PARTY_NOTICES.md package.json tsconfig.json tsconfig.build.json vite.config.ts vite.playground.config.ts vitest.config.ts",
+    "playground": "vite --config vite.playground.config.ts",
+    "playground:build": "vite build --config vite.playground.config.ts",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "vue-tsc --noEmit",
+    "verify:package": "node scripts/verify-package.mjs",
+    "prepack": "pnpm build"
+  },
+  "peerDependencies": {
+    "vue": ">=3.5.0 <4"
+  },
+  "dependencies": {
+    "@vueuse/core": "^14.4.0",
+    "motion-v": "^2.3.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.0",
+    "@types/node": "^22.15.0",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "@vitest/coverage-v8": "^4.1.10",
+    "@vue/test-utils": "^2.4.11",
+    "eslint": "^10.8.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-vue": "^10.10.0",
+    "globals": "^17.9.0",
+    "jsdom": "^30.0.1",
+    "prettier": "^3.9.6",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.66.0",
+    "vite": "^8.2.1",
+    "vitest": "^4.1.10",
+    "vue": "3.5.41",
+    "vue-tsc": "^3.3.9"
+  }
+}

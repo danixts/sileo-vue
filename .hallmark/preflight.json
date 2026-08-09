@@ -1,0 +1,8 @@
+{
+  "date": "2026-08-09",
+  "font_stack": "No existing demo font stack; local system pair selected",
+  "palette": "Sileo state colors exist in src/styles.css",
+  "motion": "motion-v 2.3.0",
+  "spacing": "New 4pt token scale for playground only",
+  "framework": "Vue 3.5.41 with Vite 8"
+}
