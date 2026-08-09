@@ -31,28 +31,23 @@ pnpm playground
 Abre `http://localhost:5173` para probar todos los estados, cambiar posición y
 tema, ejecutar una promesa, mostrar varias notificaciones y limpiar el viewport.
 
-## Instalación desde GitHub Packages
+## Instalación desde npm
 
-El paquete se publica desde
-[`danixts/sileo-vue`](https://github.com/danixts/sileo-vue), por lo que usa el
-scope `@danixts`.
-
-Crea o actualiza `.npmrc` en la aplicación consumidora:
-
-```ini
-@danixts:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=${GITHUB_PACKAGES_TOKEN}
-```
-
-El token necesita el permiso `read:packages`. Después instala la dependencia:
+El paquete público se distribuye en
+[`npmjs.com/package/@danixts/sileo-vue`](https://www.npmjs.com/package/@danixts/sileo-vue)
+y no necesita `.npmrc` ni tokens para instalarse:
 
 ```bash
 pnpm add @danixts/sileo-vue
 ```
 
-GitHub Packages solicita autenticación también al descargar paquetes públicos.
-Si prefieres una instalación pública sin configurar un token, instala el
-tarball adjunto al release:
+También puedes instalarlo con el cliente oficial de npm:
+
+```bash
+npm install @danixts/sileo-vue
+```
+
+Cada GitHub Release también incluye un tarball instalable directamente:
 
 ```bash
 pnpm add https://github.com/danixts/sileo-vue/releases/download/v0.1.0/danixts-sileo-vue-0.1.0.tgz
@@ -277,14 +272,48 @@ Los workflows del repositorio:
 
 - `ci.yml` valida lint, tipos, pruebas, paquete y playground en cada cambio.
 - `pages.yml` publica el playground en GitHub Pages desde `main`.
-- `publish.yml` publica el paquete en GitHub Packages y adjunta un tarball
-  instalable públicamente cuando se publica un GitHub Release.
+- `publish.yml` publica el paquete en npm mediante Trusted Publishing y adjunta
+  un tarball instalable cuando se publica un GitHub Release.
 
 Antes de cada release:
 
-1. Confirma el scope y la URL del repositorio en `package.json`.
-2. Actualiza la versión con `pnpm version patch`, `minor` o `major`.
-3. Crea el tag y el GitHub Release correspondiente.
+1. Actualiza la versión con `pnpm version patch`, `minor` o `major`.
+2. Publica los cambios y el tag en GitHub.
+3. Crea el GitHub Release correspondiente.
 
-Los workflows usan Node.js 22, pnpm y permisos mínimos de `GITHUB_TOKEN` para
-Pages, Releases y GitHub Packages.
+El release activa `.github/workflows/publish.yml`, que valida el proyecto y
+ejecuta:
+
+```bash
+npm publish --access public
+```
+
+### Primera publicación en npm
+
+El owner de la organización npm `danixts` debe iniciar sesión, tener 2FA para
+operaciones de escritura y publicar la primera versión:
+
+```bash
+npm login --auth-type=web
+npm whoami
+npm publish --access public
+```
+
+### Trusted Publishing
+
+Después de la primera publicación, configura el paquete en npm con este Trusted
+Publisher:
+
+- Proveedor: `GitHub Actions`.
+- Organización o usuario: `danixts`.
+- Repositorio: `sileo-vue`.
+- Workflow: `publish.yml`.
+- Acción permitida: `npm publish`.
+
+El workflow usa `id-token: write` para autenticarse por OIDC y no necesita un
+`NPM_TOKEN` persistente. npm genera la provenance del paquete automáticamente
+cuando la publicación proviene del repositorio público autorizado. Consulta la
+[documentación oficial de Trusted Publishing](https://docs.npmjs.com/trusted-publishers/).
+
+Los workflows usan Node.js 22, pnpm y npm 11. Pages y Releases usan permisos
+mínimos de `GITHUB_TOKEN`.

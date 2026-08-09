@@ -7,7 +7,7 @@ on:
 
 permissions:
   contents: write
-  packages: write
+  id-token: write
 
 concurrency:
   group: publish-${{ github.ref }}
@@ -29,8 +29,10 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          registry-url: https://npm.pkg.github.com
-          scope: "@danixts"
+          registry-url: https://registry.npmjs.org
+
+      - name: Set up npm trusted publishing
+        run: npm install --global npm@11
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -42,9 +44,7 @@ jobs:
         run: pnpm pack --pack-destination artifacts
 
       - name: Publish
-        run: pnpm publish --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm publish --access public
 
       - name: Attach public package to release
         if: github.event_name == 'release'

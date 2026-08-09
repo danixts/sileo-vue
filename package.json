@@ -2,6 +2,14 @@
   "name": "@danixts/sileo-vue",
   "version": "0.1.0",
   "description": "Physics-based toast notifications for Vue 3, inspired by Sileo.",
+  "keywords": [
+    "vue",
+    "vue3",
+    "toast",
+    "notification",
+    "animation",
+    "gradient"
+  ],
   "license": "MIT",
   "type": "module",
   "packageManager": "pnpm@11.20.0",
@@ -13,9 +21,13 @@
     "type": "git",
     "url": "git+https://github.com/danixts/sileo-vue.git"
   },
+  "homepage": "https://danixts.github.io/sileo-vue/",
+  "bugs": {
+    "url": "https://github.com/danixts/sileo-vue/issues"
+  },
   "publishConfig": {
     "access": "public",
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://registry.npmjs.org"
   },
   "sideEffects": [
     "**/*.css"
