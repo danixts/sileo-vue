@@ -20,17 +20,21 @@ import {
   PILL_PADDING,
   SPRING,
   SWAP_COLLAPSE_MS,
+  SWIPE_DISMISS_PX,
+  SWIPE_MAX_PX,
   WIDTH,
 } from "../constants";
 import type {
   SileoButton,
   SileoGradient,
+  SileoStackProps,
   SileoState,
   SileoStyles,
+  SileoTextAlign,
   SileoVariant,
 } from "../types";
 import { ContentRenderer } from "./ContentRenderer";
-import { SileoIcon } from "./SileoIcon";
+import { SileoCloseIcon, SileoIcon } from "./SileoIcon";
 
 interface View {
   title?: string;
@@ -40,6 +44,7 @@ interface View {
   styles?: SileoStyles;
   button?: SileoButton;
   fill: string;
+  descriptionAlign?: SileoTextAlign;
 }
 
 interface HeaderLayer {
@@ -50,6 +55,7 @@ interface HeaderLayer {
 const props = withDefaults(
   defineProps<{
     id: string;
+    uid?: string;
     fill?: string;
     variant?: SileoVariant;
     gradient?: SileoGradient;
@@ -67,6 +73,9 @@ const props = withDefaults(
     autoCollapseDelayMs?: number;
     canExpand?: boolean;
     refreshKey?: string;
+    descriptionAlign?: SileoTextAlign;
+    closable?: boolean;
+    stack?: SileoStackProps;
   }>(),
   {
     state: "success",
@@ -75,6 +84,7 @@ const props = withDefaults(
     expand: "bottom",
     exiting: false,
     canExpand: true,
+    closable: true,
   },
 );
 
@@ -106,7 +116,8 @@ let autoCollapseTimer: number | undefined;
 let swapTimer: number | undefined;
 let pillObserver: ResizeObserver | undefined;
 let contentObserver: ResizeObserver | undefined;
-let measureFrame = 0;
+let pillFrame = 0;
+let contentFrame = 0;
 
 function createView(): View {
   return {
@@ -117,6 +128,7 @@ function createView(): View {
     styles: props.styles,
     button: props.button,
     fill: props.fill ?? DEFAULT_SURFACE,
+    descriptionAlign: props.descriptionAlign,
   };
 }
 
@@ -133,6 +145,16 @@ const isLoading = computed(() => view.value.state === "loading");
 const canOpen = computed(() => props.canExpand && !isLoading.value);
 const open = computed(
   () => hasDescription.value && isExpanded.value && canOpen.value,
+);
+// Ids reach the DOM inside url(#...), so never trust the caller-supplied one.
+const domId = computed(
+  () => props.uid ?? (props.id.replace(/[^\w-]/g, "-") || "toast"),
+);
+const filterId = computed(() => `sileo-gooey-${domId.value}`);
+const gradientId = computed(() => `sileo-gradient-${domId.value}`);
+const isStacked = computed(() => (props.stack?.stackSize ?? 1) > 1);
+const isAlert = computed(
+  () => view.value.state === "error" || view.value.state === "warning",
 );
 const resolvedRoundness = computed(() =>
   Math.max(0, props.roundness ?? DEFAULT_ROUNDNESS),
@@ -175,13 +197,24 @@ const bodyTransition = computed(() =>
   open.value ? SPRING : { ...SPRING, bounce: 0 },
 );
 const pillTransition = computed(() => (ready.value ? SPRING : { duration: 0 }));
-const rootStyle = computed<CSSProperties & Record<string, string>>(() => ({
-  "--_h": `${open.value ? expanded.value : HEIGHT}px`,
-  "--_pw": `${resolvedPillWidth.value}px`,
-  "--_px": `${pillX.value}px`,
-  "--sileo-roundness": `${resolvedRoundness.value}px`,
-  "--_ht": `translateY(${open.value ? (props.expand === "bottom" ? 3 : -3) : 0}px) scale(${open.value ? 0.9 : 1})`,
-}));
+const rootStyle = computed<CSSProperties & Record<string, string>>(() => {
+  const style: CSSProperties & Record<string, string> = {
+    "--_h": `${open.value ? expanded.value : HEIGHT}px`,
+    "--_pw": `${resolvedPillWidth.value}px`,
+    "--_px": `${pillX.value}px`,
+    "--sileo-roundness": `${resolvedRoundness.value}px`,
+    "--_ht": `translateY(${open.value ? (props.expand === "bottom" ? 3 : -3) : 0}px) scale(${open.value ? 0.9 : 1})`,
+  };
+
+  const stack = props.stack;
+  if (stack && stack.stackSize > 1) {
+    style["--sileo-stack-index"] = `${stack.stackIndex}`;
+    style["--sileo-front-height"] = `${stack.frontHeight}px`;
+    style.zIndex = stack.stackSize - stack.stackIndex;
+  }
+
+  return style;
+});
 
 function clearTimer(timer: number | undefined): void {
   if (timer !== undefined) window.clearTimeout(timer);
@@ -269,6 +302,7 @@ watch(
       props.icon,
       props.styles,
       props.button,
+      props.descriptionAlign,
     ] as const,
   () => {
     const nextView = createView();
@@ -343,6 +377,31 @@ function handleMouseLeave(event: MouseEvent): void {
   isExpanded.value = false;
 }
 
+// Keyboard users never fire mouseenter, so focus has to open the toast too.
+function handleFocusIn(): void {
+  if (hasDescription.value) isExpanded.value = true;
+}
+
+function handleFocusOut(event: FocusEvent): void {
+  const next = event.relatedTarget as Node | null;
+  if (next && buttonRef.value?.contains(next)) return;
+  isExpanded.value = false;
+}
+
+function handleKeydown(event: KeyboardEvent): void {
+  if (event.key === "Escape") {
+    emit("dismiss");
+    return;
+  }
+  if (
+    (event.key === "Enter" || event.key === " ") &&
+    event.target === buttonRef.value
+  ) {
+    event.preventDefault();
+    isExpanded.value = !isExpanded.value;
+  }
+}
+
 function handleTransitionEnd(event: TransitionEvent): void {
   if (event.propertyName !== "height" && event.propertyName !== "transform") {
     return;
@@ -356,10 +415,18 @@ function handleAction(event: MouseEvent): void {
   view.value.button?.onClick();
 }
 
+function releasePointer(event: PointerEvent): void {
+  pointerStart.value = undefined;
+  if (buttonRef.value) buttonRef.value.style.transform = "";
+  if (buttonRef.value?.hasPointerCapture(event.pointerId)) {
+    buttonRef.value.releasePointerCapture(event.pointerId);
+  }
+}
+
 function handlePointerDown(event: PointerEvent): void {
   if (props.exiting) return;
   const target = event.target as HTMLElement;
-  if (target.closest("[data-sileo-button]")) return;
+  if (target.closest("[data-sileo-button], [data-sileo-dismiss]")) return;
   pointerStart.value = event.clientY;
   buttonRef.value?.setPointerCapture(event.pointerId);
 }
@@ -368,29 +435,27 @@ function handlePointerMove(event: PointerEvent): void {
   const element = buttonRef.value;
   if (pointerStart.value === undefined || !element) return;
   const delta = event.clientY - pointerStart.value;
-  const clamped = Math.min(Math.abs(delta), 20) * (delta > 0 ? 1 : -1);
+  const clamped = Math.min(Math.abs(delta), SWIPE_MAX_PX) * Math.sign(delta);
   element.style.transform = `translateY(${clamped}px)`;
 }
 
 function handlePointerUp(event: PointerEvent): void {
-  const element = buttonRef.value;
-  if (pointerStart.value === undefined || !element) return;
+  if (pointerStart.value === undefined || !buttonRef.value) return;
   const delta = event.clientY - pointerStart.value;
-  pointerStart.value = undefined;
-  element.style.transform = "";
-  if (Math.abs(delta) > 30) emit("dismiss");
+  releasePointer(event);
+  if (Math.abs(delta) > SWIPE_DISMISS_PX) emit("dismiss");
 }
 
 onMounted(() => {
   measurePill();
   measureContent();
   pillObserver = new ResizeObserver(() => {
-    cancelAnimationFrame(measureFrame);
-    measureFrame = requestAnimationFrame(measurePill);
+    cancelAnimationFrame(pillFrame);
+    pillFrame = requestAnimationFrame(measurePill);
   });
   contentObserver = new ResizeObserver(() => {
-    cancelAnimationFrame(measureFrame);
-    measureFrame = requestAnimationFrame(measureContent);
+    cancelAnimationFrame(contentFrame);
+    contentFrame = requestAnimationFrame(measureContent);
   });
   if (innerRef.value) pillObserver.observe(innerRef.value);
   if (contentRef.value) contentObserver.observe(contentRef.value);
@@ -404,7 +469,8 @@ onBeforeUnmount(() => {
   clearTimer(autoExpandTimer);
   clearTimer(autoCollapseTimer);
   clearTimer(swapTimer);
-  cancelAnimationFrame(measureFrame);
+  cancelAnimationFrame(pillFrame);
+  cancelAnimationFrame(contentFrame);
   pillObserver?.disconnect();
   contentObserver?.disconnect();
 });
@@ -413,7 +479,9 @@ onBeforeUnmount(() => {
 <template>
   <article
     ref="buttonRef"
-    role="status"
+    tabindex="0"
+    :role="isAlert ? 'alert' : 'status'"
+    :aria-live="isAlert ? 'assertive' : 'polite'"
     data-sileo-toast
     :data-variant="variant"
     :data-ready="ready"
@@ -422,18 +490,26 @@ onBeforeUnmount(() => {
     :data-edge="expand"
     :data-position="position"
     :data-state="view.state"
+    :data-stack-index="isStacked ? stack?.stackIndex : undefined"
+    :data-stack-hidden="
+      isStacked && stack?.stackVisible === false ? '' : undefined
+    "
     :style="rootStyle"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
+    @focusin="handleFocusIn"
+    @focusout="handleFocusOut"
+    @keydown="handleKeydown"
     @transitionend="handleTransitionEnd"
     @pointerdown="handlePointerDown"
     @pointermove="handlePointerMove"
     @pointerup="handlePointerUp"
+    @pointercancel="releasePointer"
   >
     <div
       data-sileo-canvas
       :data-edge="expand"
-      :style="{ filter: `url(#sileo-gooey-${id})` }"
+      :style="{ filter: `url(#${filterId})` }"
     >
       <svg
         data-sileo-svg
@@ -444,7 +520,7 @@ onBeforeUnmount(() => {
         <title>Sileo notification</title>
         <defs>
           <filter
-            :id="`sileo-gooey-${id}`"
+            :id="filterId"
             x="-20%"
             y="-20%"
             width="140%"
@@ -466,7 +542,7 @@ onBeforeUnmount(() => {
           </filter>
           <linearGradient
             v-if="variant === 'gradient'"
-            :id="`sileo-gradient-${id}`"
+            :id="gradientId"
             gradientUnits="userSpaceOnUse"
             x1="0"
             y1="0"
@@ -493,9 +569,7 @@ onBeforeUnmount(() => {
           data-sileo-pill
           :rx="resolvedRoundness"
           :ry="resolvedRoundness"
-          :fill="
-            variant === 'gradient' ? `url(#sileo-gradient-${id})` : view.fill
-          "
+          :fill="variant === 'gradient' ? `url(#${gradientId})` : view.fill"
           :initial="false"
           :animate="pillAnimation"
           :transition="pillTransition"
@@ -506,9 +580,7 @@ onBeforeUnmount(() => {
           :width="WIDTH"
           :rx="resolvedRoundness"
           :ry="resolvedRoundness"
-          :fill="
-            variant === 'gradient' ? `url(#sileo-gradient-${id})` : view.fill
-          "
+          :fill="variant === 'gradient' ? `url(#${gradientId})` : view.fill"
           :initial="false"
           :animate="bodyAnimation"
           :transition="bodyTransition"
@@ -572,6 +644,17 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
+    <button
+      v-if="closable && !isLoading"
+      type="button"
+      data-sileo-dismiss
+      :data-edge="expand"
+      aria-label="Dismiss notification"
+      @click.prevent.stop="emit('dismiss')"
+    >
+      <SileoCloseIcon />
+    </button>
+
     <div
       v-if="hasDescription"
       data-sileo-content
@@ -581,6 +664,7 @@ onBeforeUnmount(() => {
       <div
         ref="contentRef"
         data-sileo-description
+        :data-align="view.descriptionAlign"
         :class="view.styles?.description"
       >
         <ContentRenderer :content="view.description" />
@@ -901,6 +985,75 @@ onBeforeUnmount(() => {
   line-height: 1.25rem;
   contain: layout style paint;
   content-visibility: auto;
+}
+
+[data-sileo-description][data-align="center"] {
+  text-align: center;
+}
+
+[data-sileo-description][data-align="right"] {
+  text-align: right;
+}
+
+/* --------------------------------- Dismiss -------------------------------- */
+
+[data-sileo-dismiss] {
+  position: absolute;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--sileo-variant-surface, var(--sileo-surface, #ffffff));
+  color: var(--sileo-content-color, currentColor);
+  opacity: 0;
+  cursor: pointer;
+  transform: scale(0.6);
+  pointer-events: none;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease,
+    background-color 150ms ease;
+}
+
+[data-sileo-dismiss][data-edge="bottom"] {
+  top: -3px;
+  left: calc(var(--_px) + var(--_pw) - 15px);
+}
+
+[data-sileo-dismiss][data-edge="top"] {
+  bottom: -3px;
+  left: calc(var(--_px) + var(--_pw) - 15px);
+}
+
+[data-sileo-toast]:hover [data-sileo-dismiss],
+[data-sileo-toast]:focus-within [data-sileo-dismiss],
+[data-sileo-dismiss]:focus-visible {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+[data-sileo-dismiss]:hover {
+  background-color: color-mix(
+    in oklch,
+    var(--sileo-content-color, #000000) 15%,
+    var(--sileo-variant-surface, var(--sileo-surface, #ffffff))
+  );
+}
+
+/* Without hover there is nothing to reveal the button, so keep it visible. */
+@media (hover: none) {
+  [data-sileo-dismiss] {
+    opacity: 0.6;
+    transform: scale(1);
+    pointer-events: auto;
+  }
 }
 
 [data-sileo-button] {

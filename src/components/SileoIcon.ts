@@ -1,3 +1,4 @@
+/* eslint-disable vue/one-component-per-file -- the icon set belongs together */
 import { defineComponent, h, type PropType, type VNode } from "vue";
 import type { SileoState } from "../types";
 
@@ -24,6 +25,25 @@ const PATHS: Record<SileoState, () => VNode[]> = {
   ],
 };
 
+function renderSvg(children: VNode[], size: number, spin?: boolean): VNode {
+  return h(
+    "svg",
+    {
+      width: size,
+      height: size,
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": 2,
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+      "aria-hidden": "true",
+      "data-sileo-icon": spin ? "spin" : undefined,
+    },
+    children,
+  );
+}
+
 export const SileoIcon = defineComponent({
   name: "SileoIcon",
   props: {
@@ -33,22 +53,13 @@ export const SileoIcon = defineComponent({
     },
   },
   setup(props) {
-    return () =>
-      h(
-        "svg",
-        {
-          width: 16,
-          height: 16,
-          viewBox: "0 0 24 24",
-          fill: "none",
-          stroke: "currentColor",
-          "stroke-width": 2,
-          "stroke-linecap": "round",
-          "stroke-linejoin": "round",
-          "aria-hidden": "true",
-          "data-sileo-icon": props.state === "loading" ? "spin" : undefined,
-        },
-        PATHS[props.state](),
-      );
+    return () => renderSvg(PATHS[props.state](), 16, props.state === "loading");
+  },
+});
+
+export const SileoCloseIcon = defineComponent({
+  name: "SileoCloseIcon",
+  setup() {
+    return () => renderSvg(PATHS.error(), 12);
   },
 });

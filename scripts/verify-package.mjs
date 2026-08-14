@@ -40,8 +40,14 @@ if (!styles.includes("data-v-") || !styles.includes("data-variant")) {
   throw new Error("Library styles must remain scoped and include variants.");
 }
 
-if (/\[data-sileo-toast\][^{]*:hover[^}]*opacity\s*:/s.test(styles)) {
-  throw new Error("Hover styles must not change toast text opacity.");
+// The dismiss button is the only element allowed to fade in on hover.
+for (const [selector, body] of styles.matchAll(/([^{}]+)\{([^}]*)\}/g)) {
+  if (!selector.includes("[data-sileo-toast]")) continue;
+  if (!selector.includes(":hover")) continue;
+  if (selector.includes("[data-sileo-dismiss]")) continue;
+  if (/opacity\s*:/.test(body)) {
+    throw new Error("Hover styles must not change toast text opacity.");
+  }
 }
 
 if (
