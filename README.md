@@ -74,20 +74,54 @@ sileo.action({
 
 ### Identificadores
 
-Si necesitas mostrar varios toast al mismo tiempo, asigna un `id` diferente a
-cada uno:
+Cada llamada crea un toast nuevo y devuelve su `id` generado. Reutiliza un `id`
+propio cuando quieras que la siguiente llamada reemplace al toast anterior en
+lugar de apilar otro:
 
 ```ts
-sileo.info({ id: "sync", title: "Sincronizando" });
-sileo.warning({ id: "quota", title: "Límite cercano" });
+const id = sileo.info({ title: "Sincronizando" });
+sileo.success({ id, title: "Sincronizado" });
 ```
 
 También puedes cerrar uno o limpiar todos:
 
 ```ts
-sileo.dismiss("sync");
+sileo.dismiss(id);
 sileo.clear();
 ```
+
+### Pila de notificaciones
+
+Los toasts de una misma posición se agrupan: el frontal queda visible y el
+resto se apila detrás. Al pasar el mouse la pila se despliega.
+
+```vue
+<Toaster :max-visible-toasts="3" />
+```
+
+`maxVisibleToasts` es `3` de forma predeterminada; los toasts que exceden ese
+número se ocultan hasta que la pila avanza.
+
+### Cierre y alineación
+
+```ts
+sileo.info({
+  title: "Reporte listo",
+  description: "Descarga disponible por 24 horas.",
+  descriptionAlign: "center",
+  closable: true,
+});
+```
+
+`closable` muestra un botón de cierre al pasar el mouse o al enfocar el toast, y
+es `true` de forma predeterminada. `descriptionAlign` acepta `left`, `center` y
+`right`.
+
+### Teclado
+
+El toast es enfocable: `Tab` lo alcanza, `Enter` o `Espacio` alternan la
+descripción y `Escape` lo descarta. Los estados `error` y `warning` se anuncian
+como `role="alert"`.
 
 ## Promesas
 
@@ -114,11 +148,13 @@ await sileo.promise(saveProfile(), {
   position="bottom-right"
   :z-index="1000"
   theme="system"
+  :max-visible-toasts="3"
   :offset="{ bottom: 24, right: 24 }"
   :options="{
     duration: 5000,
     roundness: 14,
     autopilot: true,
+    closable: true,
   }"
 />
 ```
@@ -141,10 +177,21 @@ para mensajes que el usuario deba leer: la animación física dura alrededor de
 
 ## Temas
 
-`Toaster` soporta `light`, `dark` y `system`:
+`Toaster` soporta `light`, `dark` y `system`. El valor predeterminado es
+`system`, que sigue `prefers-color-scheme` y reacciona a sus cambios:
 
 ```vue
 <Toaster theme="system" />
+```
+
+## Teleport
+
+El viewport se monta en `<body>` para que ningún `overflow` o `transform` del
+árbol lo recorte. Puedes cambiar el destino o desactivarlo:
+
+```vue
+<Toaster teleport="#toast-root" />
+<Toaster :teleport="false" />
 ```
 
 ## Variantes
@@ -213,6 +260,16 @@ sileo.info({
 - `sileo.promise(promiseOrFactory, options)`
 - `sileo.dismiss(id)`
 - `sileo.clear(position?)`
+
+## Migración desde 0.1.x
+
+`sileo.success({ title })` sin `id` ya no reemplaza al toast anterior: cada
+llamada crea uno nuevo y los toasts se apilan. Para conservar el comportamiento
+previo pasa siempre el mismo `id`:
+
+```ts
+sileo.success({ id: "app-toast", title: "Guardado" });
+```
 
 ## Licencia
 
