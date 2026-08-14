@@ -3,6 +3,7 @@ import {
   sileo,
   Toaster,
   type SileoPosition,
+  type SileoTextAlign,
   type SileoTheme,
   type SileoVariant,
 } from "@danixts/sileo-vue";
@@ -15,6 +16,9 @@ const customGradient = ref(false);
 const gradientFrom = ref("#7c3aed");
 const gradientTo = ref("#06b6d4");
 const promiseState = ref<"idle" | "running">("idle");
+const maxVisibleToasts = ref(3);
+const closable = ref(true);
+const descriptionAlign = ref<SileoTextAlign>("left");
 
 const positions: SileoPosition[] = [
   "top-left",
@@ -92,17 +96,19 @@ async function showPromise(): Promise<void> {
 
 function showStack(): void {
   const stack = [
-    { id: "build", title: "Build completado", state: "success" as const },
-    { id: "types", title: "Tipos generados", state: "info" as const },
-    { id: "review", title: "Revisión pendiente", state: "warning" as const },
+    { title: "Build completado", state: "success" as const },
+    { title: "Tipos generados", state: "info" as const },
+    { title: "Revisión pendiente", state: "warning" as const },
+    { title: "Deploy en cola", state: "action" as const },
+    { title: "Cobertura publicada", state: "success" as const },
   ];
 
   for (const item of stack) {
     sileo.show({
-      id: item.id,
       title: item.title,
       type: item.state,
-      duration: 8000,
+      description: "Pasa el mouse por encima para desplegar la pila.",
+      duration: 12000,
     });
   }
 }
@@ -141,10 +147,13 @@ watch(
   <Toaster
     :position="position"
     :theme="theme"
+    :max-visible-toasts="maxVisibleToasts"
     :options="{
       duration: 6000,
       autopilot: true,
       variant,
+      closable,
+      descriptionAlign,
       gradient: customGradient
         ? { from: gradientFrom, to: gradientTo }
         : undefined,
@@ -160,7 +169,7 @@ watch(
       <div class="lab-status" aria-label="Estado del playground">
         <span class="status-signal" aria-hidden="true"><i /></span>
         <strong>Playground activo</strong>
-        <code>v0.1.0</code>
+        <code>v0.2.0</code>
       </div>
     </header>
 
@@ -240,6 +249,34 @@ watch(
           </div>
         </fieldset>
 
+        <label class="field">
+          <span>Toasts visibles</span>
+          <select v-model.number="maxVisibleToasts">
+            <option v-for="item in [1, 2, 3, 5]" :key="item" :value="item">
+              {{ item }}
+            </option>
+          </select>
+        </label>
+
+        <fieldset class="theme-field">
+          <legend>Descripción</legend>
+          <div class="theme-options">
+            <label v-for="item in ['left', 'center', 'right']" :key="item">
+              <input
+                v-model="descriptionAlign"
+                type="radio"
+                name="sileo-align"
+                :value="item"
+              />
+              <span>{{ item }}</span>
+            </label>
+          </div>
+          <label class="gradient-toggle">
+            <input v-model="closable" type="checkbox" />
+            <span>Botón de cierre</span>
+          </label>
+        </fieldset>
+
         <button class="clear-button" type="button" @click="sileo.clear()">
           Limpiar notificaciones
         </button>
@@ -314,7 +351,7 @@ watch(
           <button type="button" data-tone="stack" @click="showStack">
             <span class="trigger-signal" aria-hidden="true"><i /></span>
             <span class="trigger-copy">
-              <strong>Stack ×3</strong>
+              <strong>Stack ×5</strong>
               <small>Agrupar notificaciones</small>
             </span>
             <span class="trigger-mark" aria-hidden="true">↗</span>
