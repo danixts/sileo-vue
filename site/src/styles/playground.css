@@ -229,6 +229,9 @@ h1 {
     monospace;
   white-space: pre-wrap;
 }
+.code-block {
+  align-items: stretch;
+}
 .code-block .copy-button {
   position: absolute;
   top: 9px;

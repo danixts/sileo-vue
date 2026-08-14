@@ -1,6 +1,9 @@
 ---
+import { Code } from 'astro:components'
 import SileoLab from '../components/SileoLab.vue'
 import '../styles/playground.css'
+
+const codeThemes = { light: 'github-light', dark: 'github-dark' } as const
 
 export const prerender = true
 
@@ -197,9 +200,30 @@ const capabilities = [
           </nav>
         </div>
         <div class="code-block">
-          <pre data-code="setup">{installExamples.setup}</pre>
-          <pre data-code="usage" hidden>{installExamples.usage}</pre>
-          <pre data-code="promise" hidden>{installExamples.promise}</pre>
+          <div data-code="setup">
+            <Code
+              code={installExamples.setup}
+              lang="vue"
+              themes={codeThemes}
+              wrap
+            />
+          </div>
+          <div data-code="usage" hidden>
+            <Code
+              code={installExamples.usage}
+              lang="ts"
+              themes={codeThemes}
+              wrap
+            />
+          </div>
+          <div data-code="promise" hidden>
+            <Code
+              code={installExamples.promise}
+              lang="ts"
+              themes={codeThemes}
+              wrap
+            />
+          </div>
           <button
             class="copy-button"
             type="button"
@@ -250,6 +274,37 @@ const capabilities = [
         >
       </footer>
     </main>
+
+
+    <style is:global>
+      /* Shiki paints its own palette, the page owns the surface. */
+      .code-block .astro-code {
+        margin: 0;
+        padding: 16px 52px 16px 16px;
+        background: transparent !important;
+        font:
+          0.76rem/1.65 ui-monospace,
+          SFMono-Regular,
+          Consolas,
+          monospace;
+      }
+
+      .code-block [data-code] {
+        width: 100%;
+      }
+
+      .code-block [data-code][hidden] {
+        display: none;
+      }
+
+      html[data-theme='dark'] .astro-code,
+      html[data-theme='dark'] .astro-code span {
+        color: var(--shiki-dark) !important;
+        font-style: var(--shiki-dark-font-style) !important;
+        font-weight: var(--shiki-dark-font-weight) !important;
+        text-decoration: var(--shiki-dark-text-decoration) !important;
+      }
+    </style>
 
     <script>
       let theme: 'dark' | 'light' = 'dark'
