@@ -3,16 +3,33 @@ import { sileo } from "../src/core/api";
 import { store } from "../src/core/store";
 
 describe("sileo API", () => {
-  it("creates and replaces the default toast", () => {
-    expect(sileo.success({ title: "Saved" })).toBe("sileo-default");
-    sileo.error({ title: "Failed" });
+  it("stacks toasts created without an explicit id", () => {
+    const first = sileo.success({ title: "Saved" });
+    const second = sileo.error({ title: "Failed" });
+
+    expect(first).not.toBe(second);
+    expect(store.toasts).toHaveLength(2);
+    expect(store.toasts[1]).toMatchObject({ state: "error", title: "Failed" });
+  });
+
+  it("replaces a toast reusing its id", () => {
+    sileo.success({ id: "session", title: "Saved" });
+    sileo.error({ id: "session", title: "Failed" });
 
     expect(store.toasts).toHaveLength(1);
     expect(store.toasts[0]).toMatchObject({
-      id: "sileo-default",
+      id: "session",
       state: "error",
       title: "Failed",
     });
+  });
+
+  it("keeps the same uid across updates of one toast", () => {
+    sileo.success({ id: "session", title: "Saved" });
+    const uid = store.toasts[0]?.uid;
+    sileo.error({ id: "session", title: "Failed" });
+
+    expect(store.toasts[0]?.uid).toBe(uid);
   });
 
   it("keeps independently identified toasts", () => {

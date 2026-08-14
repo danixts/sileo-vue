@@ -13,6 +13,8 @@ export interface InternalSileoOptions extends SileoOptions {
 export interface SileoItem extends InternalSileoOptions {
   id: string;
   instanceId: string;
+  /** Stable, DOM-safe token. Ids come from users and can break `url(#...)`. */
+  uid: string;
   exiting?: boolean;
   autoExpandDelayMs?: number;
   autoCollapseDelayMs?: number;
@@ -83,7 +85,7 @@ function mergeOptions(options: InternalSileoOptions): InternalSileoOptions {
 function buildSileoItem(
   options: InternalSileoOptions,
   id: string,
-  fallbackPosition?: SileoPosition,
+  previous?: SileoItem,
 ): SileoItem {
   const duration = options.duration ?? DEFAULT_TOAST_DURATION;
   const autopilot = resolveAutopilot(options, duration);
@@ -92,7 +94,8 @@ function buildSileoItem(
     ...options,
     id,
     instanceId: generateId(),
-    position: options.position ?? fallbackPosition ?? store.position,
+    uid: previous?.uid ?? `t${(idCounter += 1)}`,
+    position: options.position ?? previous?.position ?? store.position,
     autoExpandDelayMs: autopilot.expandDelayMs,
     autoCollapseDelayMs: autopilot.collapseDelayMs,
   };
@@ -101,9 +104,9 @@ function buildSileoItem(
 export function createToast(options: InternalSileoOptions): SileoItem {
   const liveToasts = store.toasts.filter((toast) => !toast.exiting);
   const merged = mergeOptions(options);
-  const id = merged.id ?? "sileo-default";
+  const id = merged.id ?? generateId();
   const previous = liveToasts.find((toast) => toast.id === id);
-  const item = buildSileoItem(merged, id, previous?.position);
+  const item = buildSileoItem(merged, id, previous);
 
   if (previous) {
     updateStore((toasts) =>
@@ -123,7 +126,7 @@ export function updateToast(id: string, options: InternalSileoOptions): void {
   const existing = store.toasts.find((toast) => toast.id === id);
   if (!existing) return;
 
-  const item = buildSileoItem(mergeOptions(options), id, existing.position);
+  const item = buildSileoItem(mergeOptions(options), id, existing);
   updateStore((toasts) =>
     toasts.map((toast) => (toast.id === id ? item : toast)),
   );

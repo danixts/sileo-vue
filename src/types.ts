@@ -27,6 +27,7 @@ export const SILEO_POSITIONS = [
 export type SileoPosition = (typeof SILEO_POSITIONS)[number];
 export type SileoTheme = "light" | "dark" | "system";
 export type SileoVariant = "neutral" | "colored" | "gradient";
+export type SileoTextAlign = "left" | "center" | "right";
 
 export interface SileoGradient {
   from?: string;
@@ -52,6 +53,17 @@ export interface SileoOptions {
   roundness?: number;
   autopilot?: boolean | { expand?: number; collapse?: number };
   button?: SileoButton;
+  descriptionAlign?: SileoTextAlign;
+  closable?: boolean;
+}
+
+/** Layout data a toast needs to place itself inside its position stack. */
+export interface SileoStackProps {
+  stackIndex: number;
+  stackSize: number;
+  frontHeight: number;
+  stackExpanded: boolean;
+  stackVisible: boolean;
 }
 
 export interface SileoPromiseOptions<T = unknown> {
@@ -71,6 +83,10 @@ export interface SileoToasterProps {
   duration?: number | null;
   options?: Partial<SileoOptions>;
   theme?: SileoTheme;
+  /** Toasts rendered per position before the rest collapse behind the stack. */
+  maxVisibleToasts?: number;
+  /** Target for the viewport teleport. `false` renders in place. */
+  teleport?: boolean | string;
 }
 
 export type SileoViewportStyle = CSSProperties;
