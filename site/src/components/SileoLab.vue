@@ -70,7 +70,7 @@ function showWarning(): void {
 function showInfo(): void {
   sileo.info({
     title: "New release",
-    description: "Version 0.2.0 ships stacking and a dismiss button.",
+    description: "Version 0.2.1 polishes drag to dismiss.",
   });
 }
 

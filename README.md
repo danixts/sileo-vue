@@ -117,6 +117,13 @@ sileo.info({
 es `true` de forma predeterminada. `descriptionAlign` acepta `left`, `center` y
 `right`.
 
+### Arrastre
+
+El toast se arrastra en vertical para descartarlo. El cursor pasa a `grab` y a
+`grabbing` durante el gesto, y aparece un tirador en el borde. El texto del
+toast no es seleccionable para que el arrastre no seleccione contenido; la
+descripción sí lo es cuando está desplegada.
+
 ### Teclado
 
 El toast es enfocable: `Tab` lo alcanza, `Enter` o `Espacio` alternan la

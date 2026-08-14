@@ -4,6 +4,20 @@ import { describe, expect, it, vi } from "vitest";
 import Toaster from "../src/components/Toaster.vue";
 import { sileo } from "../src/core/api";
 
+async function pointer(
+  element: Element,
+  type: string,
+  clientY: number,
+): Promise<void> {
+  element.dispatchEvent(new MouseEvent(type, { bubbles: true, clientY }));
+  await nextTick();
+}
+
+async function swipe(element: Element, [from, to]: [number, number]) {
+  await pointer(element, "pointerdown", from);
+  await pointer(element, "pointermove", to);
+}
+
 describe("Toaster", () => {
   it("renders toast content in its configured viewport", async () => {
     const wrapper = mount(Toaster, {
@@ -246,6 +260,34 @@ describe("Toaster", () => {
     expect(toast.attributes("data-expanded")).toBe("true");
 
     await toast.trigger("keydown", { key: "Escape" });
+    expect(toast.attributes("data-exiting")).toBe("true");
+  });
+
+  it("marks the toast while it is being dragged", async () => {
+    const wrapper = mount(Toaster, { props: { teleport: false } });
+    sileo.info({ title: "Draggable" });
+    await nextTick();
+
+    const toast = wrapper.get("[data-sileo-toast]");
+    expect(toast.attributes("data-dragging")).toBeUndefined();
+    expect(wrapper.find("[data-sileo-grip]").exists()).toBe(true);
+
+    await swipe(toast.element, [0, 12]);
+    expect(toast.attributes("data-dragging")).toBe("");
+
+    await pointer(toast.element, "pointerup", 12);
+    expect(toast.attributes("data-dragging")).toBeUndefined();
+  });
+
+  it("dismisses when the swipe passes the threshold", async () => {
+    const wrapper = mount(Toaster, { props: { teleport: false } });
+    sileo.info({ title: "Swipe me" });
+    await nextTick();
+
+    const toast = wrapper.get("[data-sileo-toast]");
+    await swipe(toast.element, [0, 60]);
+    await pointer(toast.element, "pointerup", 60);
+
     expect(toast.attributes("data-exiting")).toBe("true");
   });
 

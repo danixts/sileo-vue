@@ -109,6 +109,7 @@ const appliedRefreshKey = ref(props.refreshKey);
 const lastRefreshKey = ref(props.refreshKey);
 const pendingView = shallowRef<{ key?: string; view: View }>();
 const pointerStart = ref<number>();
+const dragging = ref(false);
 let headerPadding: number | undefined;
 let headerExitTimer: number | undefined;
 let autoExpandTimer: number | undefined;
@@ -417,6 +418,7 @@ function handleAction(event: MouseEvent): void {
 
 function releasePointer(event: PointerEvent): void {
   pointerStart.value = undefined;
+  dragging.value = false;
   if (buttonRef.value) buttonRef.value.style.transform = "";
   if (buttonRef.value?.hasPointerCapture(event.pointerId)) {
     buttonRef.value.releasePointerCapture(event.pointerId);
@@ -435,6 +437,7 @@ function handlePointerMove(event: PointerEvent): void {
   const element = buttonRef.value;
   if (pointerStart.value === undefined || !element) return;
   const delta = event.clientY - pointerStart.value;
+  dragging.value = dragging.value || Math.abs(delta) > 1;
   const clamped = Math.min(Math.abs(delta), SWIPE_MAX_PX) * Math.sign(delta);
   element.style.transform = `translateY(${clamped}px)`;
 }
@@ -494,6 +497,7 @@ onBeforeUnmount(() => {
     :data-stack-hidden="
       isStacked && stack?.stackVisible === false ? '' : undefined
     "
+    :data-dragging="dragging ? '' : undefined"
     :style="rootStyle"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
@@ -644,6 +648,13 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
+    <span
+      v-if="!isLoading"
+      data-sileo-grip
+      :data-edge="expand"
+      aria-hidden="true"
+    ></span>
+
     <button
       v-if="closable && !isLoading"
       type="button"
@@ -735,9 +746,12 @@ onBeforeUnmount(() => {
 
 [data-sileo-toast] {
   position: relative;
-  cursor: pointer;
+  cursor: grab;
   pointer-events: auto;
   touch-action: none;
+  /* A drag that selects text mid-swipe reads as a broken gesture. */
+  user-select: none;
+  -webkit-user-select: none;
   border: 0;
   background: transparent;
   padding: 0;
@@ -750,8 +764,23 @@ onBeforeUnmount(() => {
   overflow: visible;
 }
 
+[data-sileo-toast][data-dragging] {
+  cursor: grabbing;
+}
+
 [data-sileo-toast][data-state="loading"] {
   cursor: default;
+}
+
+:is([data-sileo-button], [data-sileo-dismiss]) {
+  cursor: pointer;
+}
+
+/* The description is the one thing worth copying out of a toast. */
+[data-sileo-content][data-visible="true"] [data-sileo-description] {
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: auto;
 }
 
 [data-sileo-toast][data-ready="true"] {
@@ -993,6 +1022,42 @@ onBeforeUnmount(() => {
 
 [data-sileo-description][data-align="right"] {
   text-align: right;
+}
+
+/* ---------------------------------- Grip ---------------------------------- */
+
+[data-sileo-grip] {
+  position: absolute;
+  z-index: 25;
+  width: 18px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--sileo-content-color, currentColor);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 180ms ease,
+    width 180ms ease;
+}
+
+[data-sileo-grip][data-edge="bottom"] {
+  top: 5px;
+  left: calc(var(--_px) + var(--_pw) / 2 - 9px);
+}
+
+[data-sileo-grip][data-edge="top"] {
+  bottom: 5px;
+  left: calc(var(--_px) + var(--_pw) / 2 - 9px);
+}
+
+[data-sileo-toast]:hover [data-sileo-grip],
+[data-sileo-toast]:focus-visible [data-sileo-grip] {
+  opacity: 0.28;
+}
+
+[data-sileo-toast][data-dragging] [data-sileo-grip] {
+  width: 26px;
+  opacity: 0.55;
 }
 
 /* --------------------------------- Dismiss -------------------------------- */

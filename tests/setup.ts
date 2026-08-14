@@ -22,6 +22,19 @@ Object.defineProperty(globalThis, "ResizeObserver", {
   value: ResizeObserverMock,
 });
 
+// jsdom ships no Pointer Capture API, and the swipe handlers rely on it.
+for (const method of ["setPointerCapture", "releasePointerCapture"] as const) {
+  Object.defineProperty(HTMLElement.prototype, method, {
+    writable: true,
+    value: vi.fn(),
+  });
+}
+
+Object.defineProperty(HTMLElement.prototype, "hasPointerCapture", {
+  writable: true,
+  value: vi.fn(() => false),
+});
+
 Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: vi.fn().mockImplementation((query: string) => ({
