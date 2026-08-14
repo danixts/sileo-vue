@@ -45,5 +45,5 @@ jobs:
       - name: Build and verify package
         run: pnpm build && pnpm verify:package
 
-      - name: Build playground
-        run: pnpm playground:build
+      - name: Build site
+        run: pnpm site:build

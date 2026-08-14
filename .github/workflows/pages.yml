@@ -1,4 +1,4 @@
-name: Deploy playground
+name: Deploy site
 
 on:
   push:
@@ -37,18 +37,21 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build playground
-        run: pnpm playground:build
+      - name: Build site
+        run: pnpm site:build
+
+      - name: Add Pages no-jekyll marker
+        run: touch site/dist/.nojekyll
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
 
-      - name: Upload playground
+      - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: playground-dist
+          path: site/dist
 
       - name: Deploy
         id: deployment

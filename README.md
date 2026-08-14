@@ -271,6 +271,19 @@ previo pasa siempre el mismo `id`:
 sileo.success({ id: "app-toast", title: "Guardado" });
 ```
 
+## Playground
+
+El sitio de demostración vive en [`site/`](site) y está construido con Astro.
+
+```bash
+pnpm site        # servidor de desarrollo
+pnpm site:build  # build estático en site/dist
+```
+
+Publicado en <https://danixts.github.io/sileo-vue/>, junto a los otros dos
+ports: [Border Beam](https://danixts.github.io/jakub-antalik/beam/) y
+[Liquid Gooey](https://danixts.github.io/jakub-antalik/gooey/).
+
 ## Licencia
 
 MIT. Adaptación independiente inspirada en

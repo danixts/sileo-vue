@@ -5,7 +5,15 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", "coverage", "node_modules"] },
+  {
+    ignores: [
+      "dist",
+      "coverage",
+      "node_modules",
+      "site/dist",
+      "site/.astro",
+    ],
+  },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   ...pluginVue.configs["flat/recommended"],

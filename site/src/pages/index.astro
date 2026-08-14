@@ -1,0 +1,289 @@
+---
+import SileoLab from '../components/SileoLab.vue'
+import '../styles/playground.css'
+
+export const prerender = true
+
+const BEAM_URL = 'https://danixts.github.io/jakub-antalik/beam/'
+const GOOEY_URL = 'https://danixts.github.io/jakub-antalik/gooey/'
+
+const installExamples = {
+  setup: `pnpm add @danixts/sileo-vue
+
+<script setup lang="ts">
+import { Toaster } from '@danixts/sileo-vue'
+import '@danixts/sileo-vue/styles.css'
+</script>
+
+<template>
+  <Toaster position="top-right" theme="system" />
+</template>`,
+  usage: `import { sileo } from '@danixts/sileo-vue'
+
+sileo.success({
+  title: 'Changes saved',
+  description: 'Your workspace is in sync.',
+})
+
+const id = sileo.info({ title: 'Syncing' })
+sileo.success({ id, title: 'Synced' })`,
+  promise: `await sileo.promise(saveProfile(), {
+  loading: { title: 'Saving' },
+  success: (profile) => ({ title: \`Saved \${profile.name}\` }),
+  error: (error) => ({ title: 'Could not save', description: String(error) }),
+})`,
+} as const
+
+const capabilities = [
+  {
+    title: 'Stacked by position',
+    body: 'Toasts sharing a corner collapse into a stack. Hover spreads them apart; maxVisibleToasts caps how many stay on screen.',
+  },
+  {
+    title: 'Physics, not easing curves',
+    body: 'A spring drives the pill morph and a gooey SVG filter keeps the body attached while it expands.',
+  },
+  {
+    title: 'Keyboard and screen readers',
+    body: 'Tab focuses, Enter toggles the description, Escape dismisses. Errors and warnings announce as alerts.',
+  },
+  {
+    title: 'Three surfaces',
+    body: 'Neutral, colored and gradient variants, each with light and dark presets you can override per state.',
+  },
+] as const
+---
+
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta
+      name="description"
+      content="Sileo Vue playground: physics-based, stackable toast notifications for Vue 3"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%239f8cff'/%3E%3Crect x='14' y='22' width='36' height='11' rx='5.5' fill='white'/%3E%3Crect x='20' y='37' width='24' height='7' rx='3.5' fill='white' opacity='.55'/%3E%3C/svg%3E"
+    />
+    <title>Sileo Vue playground</title>
+  </head>
+  <body>
+    <main class="app">
+      <nav class="top-links" aria-label="Project links">
+        <button
+          class="icon-button"
+          type="button"
+          data-theme-toggle
+          aria-label="Toggle theme"
+          title="Toggle theme"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            ><path
+              d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.4-6.4L17 7m-10 10-1.4 1.4m12.8 0L17 17M7 7 5.6 5.6"
+            ></path><circle cx="12" cy="12" r="4"></circle></svg
+          >
+        </button>
+        <a
+          class="icon-button"
+          href="https://github.com/danixts/sileo-vue"
+          aria-label="GitHub"
+          title="GitHub"
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor"
+            ><path
+              d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.69c-2.78.6-3.37-1.18-3.37-1.18-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.35 1.09 2.92.83.09-.65.35-1.09.64-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.58 9.58 0 0 1 12 7.68a9.5 9.5 0 0 1 2.5.34c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86v2.9c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"
+            ></path></svg
+          >
+        </a>
+        <a
+          class="icon-button"
+          href={BEAM_URL}
+          aria-label="Border Beam playground"
+          title="Border Beam"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            ><rect x="3" y="6" width="18" height="12" rx="4"></rect><path
+              d="M8 6h6"></path></svg
+          >
+        </a>
+        <a
+          class="icon-button"
+          href={GOOEY_URL}
+          aria-label="Liquid Gooey playground"
+          title="Liquid Gooey"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            ><circle cx="8" cy="12" r="4"></circle><circle cx="16" cy="12" r="3"
+            ></circle><path d="M11.5 10.5h2"></path></svg
+          >
+        </a>
+      </nav>
+
+      <header class="hero">
+        <div class="mark">
+          <svg
+            viewBox="0 0 32 32"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            ><rect x="4" y="9" width="24" height="8" rx="4"></rect><path
+              d="M9 21h14"></path><path d="M12 25h8"></path></svg
+          >
+        </div>
+        <h1>Sileo vue</h1>
+        <p class="subtitle">
+          Physics-based, stackable toast notifications for Vue 3.
+        </p>
+        <p class="author-note">
+          Original effect by <a href="https://github.com/hiaaryan/sileo"
+            >hiaaryan</a
+          > · independent Vue port
+        </p>
+      </header>
+
+      <section class="section" aria-label="Live playground">
+        <div class="section-heading">
+          <h2>Playground</h2>
+          <p>Every toast fires into the real viewport</p>
+        </div>
+        <SileoLab client:load />
+      </section>
+
+      <section class="section" aria-label="Capabilities">
+        <div class="section-heading">
+          <h2>What it does</h2>
+          <p>v0.2.0</p>
+        </div>
+        <div class="integration-grid">
+          {
+            capabilities.map((item) => (
+              <article class="integration-card">
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </article>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="section" aria-label="Install">
+        <div class="section-heading">
+          <h2>Install</h2>
+          <nav class="segmented" aria-label="Code example">
+            <button type="button" data-code-target="setup" aria-selected="true"
+              >Setup</button
+            >
+            <button type="button" data-code-target="usage" aria-selected="false"
+              >Usage</button
+            >
+            <button
+              type="button"
+              data-code-target="promise"
+              aria-selected="false">Promise</button
+            >
+          </nav>
+        </div>
+        <div class="code-block">
+          <pre data-code="setup">{installExamples.setup}</pre>
+          <pre data-code="usage" hidden>{installExamples.usage}</pre>
+          <pre data-code="promise" hidden>{installExamples.promise}</pre>
+          <button
+            class="copy-button"
+            type="button"
+            data-copy
+            aria-label="Copy code"
+            title="Copy"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              ><rect x="9" y="9" width="11" height="11" rx="2.5"></rect><path
+                d="M15 5.5A2.5 2.5 0 0 0 12.5 3h-7A2.5 2.5 0 0 0 3 5.5v7A2.5 2.5 0 0 0 5.5 15"
+              ></path></svg
+            >
+          </button>
+        </div>
+      </section>
+
+      <section class="section" aria-label="Related ports">
+        <div class="section-heading">
+          <h2>Sibling ports</h2>
+          <p>Same design system</p>
+        </div>
+        <div class="integration-grid">
+          <article class="integration-card">
+            <h3>Border Beam</h3>
+            <p>
+              Animated borders for native TypeScript, Astro and Vue.
+              <a href={BEAM_URL}>Open playground</a>
+            </p>
+          </article>
+          <article class="integration-card">
+            <h3>Liquid Gooey</h3>
+            <p>
+              Morphing gooey specimens driven by springs.
+              <a href={GOOEY_URL}>Open playground</a>
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <footer class="footer">
+        MIT · independent Vue port by danixts ·
+        <a href="https://www.npmjs.com/package/@danixts/sileo-vue"
+          >@danixts/sileo-vue</a
+        >
+      </footer>
+    </main>
+
+    <script>
+      let theme: 'dark' | 'light' = 'dark'
+
+      document.addEventListener('click', (event) => {
+        const target =
+          event.target instanceof Element
+            ? event.target.closest<HTMLButtonElement>('button')
+            : null
+        if (!target) return
+
+        if (target.matches('[data-theme-toggle]')) {
+          theme = theme === 'dark' ? 'light' : 'dark'
+          document.documentElement.dataset.theme = theme
+        }
+
+        if (target.dataset.codeTarget) {
+          document
+            .querySelectorAll<HTMLButtonElement>('[data-code-target]')
+            .forEach((button) =>
+              button.setAttribute('aria-selected', String(button === target)),
+            )
+          document.querySelectorAll<HTMLElement>('[data-code]').forEach((code) => {
+            code.hidden = code.dataset.code !== target.dataset.codeTarget
+          })
+        }
+
+        if (target.matches('[data-copy]')) {
+          const text = target.parentElement?.querySelector<HTMLElement>(
+            '[data-code]:not([hidden])',
+          )?.textContent
+          if (text) void navigator.clipboard.writeText(text)
+        }
+      })
+    </script>
+  </body>
+</html>
