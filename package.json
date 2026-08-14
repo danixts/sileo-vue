@@ -68,7 +68,6 @@
     "vue": ">=3.5.0 <4"
   },
   "dependencies": {
-    "@vueuse/core": "^14.4.0",
     "motion-v": "^2.3.0"
   },
   "devDependencies": {

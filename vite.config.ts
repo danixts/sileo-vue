@@ -13,7 +13,7 @@ export default defineConfig({
     },
     cssCodeSplit: false,
     rollupOptions: {
-      external: ["vue", "motion-v", "@vueuse/core"],
+      external: ["vue", "motion-v"],
       output: {
         assetFileNames: (asset) =>
           asset.names?.some((name) => name.endsWith(".css"))
