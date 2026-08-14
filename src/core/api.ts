@@ -11,7 +11,23 @@ import {
   updateToast,
 } from "./store";
 
-export const sileo = {
+/** Public surface of the toast API. Keeps generated types free of internals. */
+export interface SileoApi {
+  show: (options: SileoOptions) => string;
+  success: (options: SileoOptions) => string;
+  error: (options: SileoOptions) => string;
+  warning: (options: SileoOptions) => string;
+  info: (options: SileoOptions) => string;
+  action: (options: SileoOptions) => string;
+  promise: <T>(
+    promiseOrFactory: Promise<T> | (() => Promise<T>),
+    options: SileoPromiseOptions<T>,
+  ) => Promise<T>;
+  dismiss: (id: string) => void;
+  clear: (position?: SileoPosition) => void;
+}
+
+export const sileo: SileoApi = {
   show: (options: SileoOptions): string =>
     createToast({ ...options, state: options.type }).id,
   success: (options: SileoOptions): string =>
