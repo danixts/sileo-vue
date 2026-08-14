@@ -1,6 +1,6 @@
 dist
 site/dist
-site/.astro
+.astro
 artifacts
 coverage
 node_modules
